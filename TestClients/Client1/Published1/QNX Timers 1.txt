@@ -1,0 +1,9 @@
+Timers creating threads
+If you'd like to create a new thread every time a timer fires, then you can do so with the struct sigevent and all the other timer stuff we just discussed:
+
+struct sigevent event;
+
+SIGEV_THREAD_INIT (&event, maintenance_func, NULL);
+You'll want to be particularly careful with this one, because if you specify too short an interval, you'll be flooded with new threads! This could eat up all your CPU and memory resources!
+
+Parent topic: Using timers

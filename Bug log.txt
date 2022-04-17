@@ -1,0 +1,33 @@
+Bug: One cilent able to download data from another client, but that other client is unable to download data from the first.
+Fix: Check network type configuration on PCs running Windows 10 and make sure it is set to Private; Public will not allow connections to the client.
+
+Bug: Server changes do not persist on server shutdown.
+Fix: SQLite3 database db-journal would be erased as soon as the server is shut down as a result of an omitted commit when data is written to the database - fixed by adding this commit to all functions which write data to the server's database.
+
+Bug: A client can download its own files back to itself.
+Fix: Add a check to ensure the source and destination IP addresses don't match and deny the download request if they do.
+
+Issue: If either the client or the server fails to auto-detect its IP address due to connection issues to Google's 8.8.8.8 DNS server, the fallback is to loopback, 127.0.0.1, which prevents the system from functioning.
+Fix: Prompt manual entry of the client or server's IP address with instructions on how to obtain it via Windows Command Prompt and Linux terminal as a fallback instead of setting the IP address to 127.0.0.1.
+
+Bug: Server will crash if, after manually specifying an IP address, the local PC has no Internet connection.
+Fix: Catch an exception when the server is unable to bind its UDP socket and prompt the user to retry binding up to 3 times, after which the server exits if all retries fail.
+
+Info: OS-specific IP address auto-detection quirks.
+Details: If the client or server are run on a local PC using Windows 10, the IP address auto-detection successfully completes at all times except if the local PC started from a cold boot with no Internet connection.  However, if the client or server are run on a local PC using Linux, the IP address auto-detection will always fail if the local PC has no Internet connection and fall back to manual entry.
+Fix: This discrepancy is as a result of how the IP address auto-detection works using UDP between Windows and Linux.  Switch to TCP for consistent results across both operating systems.
+
+Bug: When downloading a file, other commands can be run concurrently on the client providing the file, but the client which is downloading the file has to wait for the download to complete to do anything else.
+Fix: None yet.
+
+Bug: If a user has information on a client's files, that user can still download files from the client after de-registering from the server.
+Fix: Add a synchronized authentication check to both the client and the server to authorize file downloads - if the server cannot be reached or authorization is denied, file downloads will not occur.
+
+Bug: After a client disconnects from the server, certain commands can still be executed without the client first authenticating with the server.
+Fix: Allocate 15-minute time slots to clients and revoke authentication once this time has expired.
+
+Bug: Clients can remove or publish files which don't exist on the local PC
+Fix: Add a client-side check to ensure the files which are to be published exist and add a server-side check to ensure the files which are to be removed haven't been removed already.
+
+Bug: Clients can update the contact information of other clients
+Fix: Add the client's IP address to the UPDATE-CONTACT message along with a server-side check to only allow updating the contact registered at that specific IP address
